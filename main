@@ -13,9 +13,15 @@ suby = random.randint(1, 10)
 sub_total = subx - suby 
 
 
-print(input(f"What is the value of {addx} + {addy}?  "))
-print(input(f"What is the value of {subx} - {suby}?  "))
+player_choice_add = int(input(f"What is the value of {addx} + {addy}? "))
+player_choice_sub = int(input(f"What is the value of {subx} - {suby}? "))
 
+if (player_choice_add != add_total):
+    print("incorrect")
+else:
+    print(f"The answer to {addx} + {addy} is {add_total}")
 
-print(f"The answer to {addx} + {addy} is {add_total}")
-print(f"The answer to {subx} - {suby} is {sub_total}")
+if (player_choice_sub != sub_total):
+    print("incorrect")
+else:
+    print(f"The answer to {subx} - {suby} is {sub_total}")
