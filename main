@@ -1,8 +1,21 @@
+import random
 
-addition = x + y
+# Addition Logic
+addx = random.randint(1, 10)
+addy = random.randint(1, 10)
 
-subtraction = x - y 
+add_total = addx + addy 
 
-x = 10
+# subtraction Logic
+subx = random.randint(1, 10)
+suby = random.randint(1, 10)
 
-y = 5
+sub_total = subx - suby 
+
+
+print(input(f"What is the value of {addx} + {addy}?  "))
+print(input(f"What is the value of {subx} - {suby}?  "))
+
+
+print(f"The answer to {addx} + {addy} is {add_total}")
+print(f"The answer to {subx} - {suby} is {sub_total}")
