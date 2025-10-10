@@ -1,27 +1,37 @@
 import random
 
-# Addition Logic
-addx = random.randint(1, 10)
-addy = random.randint(1, 10)
+# Addition Function
+def add_value(addx, addy):
+    add_total = addx + addy
+    return add_total
 
-add_total = addx + addy 
+# Subtraction Function
+def sub_value(subx, suby):
+    sub_total = subx - suby
+    return sub_total
 
-# subtraction Logic
-subx = random.randint(1, 10)
-suby = random.randint(1, 10)
+# Main Game Loop
+run_game = input("Do you want to play a math game? (yes/no) ").lower()
+while(run_game == "yes"):
+    addx = random.randint(1, 10)
+    addy = random.randint(1, 10)
+    subx = random.randint(1, 10)
+    suby = random.randint(1, 10)
+    
+    add_value(addx, addy)
+    sub_value(subx, suby)
 
-sub_total = subx - suby 
+    player_choice_add = int(input(f"What is the value of {addx} + {addy}? "))
+    player_choice_sub = int(input(f"What is the value of {subx} - {suby}? "))
 
+    if (player_choice_add != add_value(addx, addy)):
+        print(f"Incorrect, The answer to {addx} + {addy} is {add_value(addx, addy)}")
+    else:
+        print(f"Correct! The answer to {addx} + {addy} is {add_value(addx, addy)}")
 
-player_choice_add = int(input(f"What is the value of {addx} + {addy}? "))
-player_choice_sub = int(input(f"What is the value of {subx} - {suby}? "))
+    if (player_choice_sub != sub_value(subx, suby)):
+        print(f"Incorrect, The answer to {subx} + {suby} is {sub_value(subx, suby)}")
+    else:
+        print(f"Correct! The answer to {subx} - {suby} is {sub_value(subx, suby)}")
 
-if (player_choice_add != add_total):
-    print("incorrect")
-else:
-    print(f"The answer to {addx} + {addy} is {add_total}")
-
-if (player_choice_sub != sub_total):
-    print("incorrect")
-else:
-    print(f"The answer to {subx} - {suby} is {sub_total}")
+    run_game = input("Do you want to play a math game? (yes/no) ").lower()
