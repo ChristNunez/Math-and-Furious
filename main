@@ -10,19 +10,38 @@ def sub_value(subx, suby):
     sub_total = subx - suby
     return sub_total
 
+def multiply_value(mulx, muly):
+    mul_total = mulx * muly
+    return mul_total
+
+def divide_value(divx, divy):
+    div_total = divx / divy
+    return div_total    
+
 # Main Game Loop
 run_game = input("Do you want to play a math game? (yes/no) ").lower()
 while(run_game == "yes"):
+    # Addition and Subtraction Random Numbers
     addx = random.randint(1, 10)
     addy = random.randint(1, 10)
     subx = random.randint(1, 10)
     suby = random.randint(1, 10)
-    
+
+    # Multiplication and Division Random Numbers
+    mulx = random.randint(1, 10)
+    muly = random.randint(1, 10)
+    divx = random.randint(1, 100)
+    divy = random.randint(1, 10)
+
     add_value(addx, addy)
     sub_value(subx, suby)
+    multiply_value(mulx, muly)
+    divide_value(divx, divy)
 
     player_choice_add = int(input(f"What is the value of {addx} + {addy}? "))
     player_choice_sub = int(input(f"What is the value of {subx} - {suby}? "))
+    player_choice_mul = int(input(f"What is the value of {mulx} * {muly}? "))
+    player_choice_div = float(input(f"What is the value of {divx} / {divy}? "))
 
     if (player_choice_add != add_value(addx, addy)):
         print(f"Incorrect, The answer to {addx} + {addy} is {add_value(addx, addy)}")
@@ -33,5 +52,13 @@ while(run_game == "yes"):
         print(f"Incorrect, The answer to {subx} + {suby} is {sub_value(subx, suby)}")
     else:
         print(f"Correct! The answer to {subx} - {suby} is {sub_value(subx, suby)}")
+    if (player_choice_mul != multiply_value(mulx, muly)):
+        print(f"Incorrect, The answer to {mulx} * {muly} is {multiply_value(mulx, muly)}")
+    else:
+        print(f"Correct! The answer to {mulx} * {muly} is {multiply_value(mulx, muly)}")
+    if (player_choice_div != divide_value(divx, divy)):
+        print(f"Incorrect, The answer to {divx} / {divy} is {divide_value(divx, divy)}")
+    else:
+        print(f"Correct! The answer to {divx} / {divy} is {divide_value(divx, divy)}")
 
     run_game = input("Do you want to play a math game? (yes/no) ").lower()
