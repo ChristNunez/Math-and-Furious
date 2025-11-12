@@ -16,6 +16,9 @@ FINISH_MASK = pygame.mask.from_surface(FINISH)
 FINISH_POSITION = (130, 250)
 RED = (255, 0, 0)
 
+# Flag 
+CHECKPOINT = scale_image(pygame.image.load('imgs/checkpoint.png'), 0.025)
+
 RED_CAR = scale_image(pygame.image.load('imgs/red-car.png'),0.55)
 GREEN_CAR = scale_image(pygame.image.load('imgs/green-car.png'),0.55)
 
@@ -189,6 +192,12 @@ def draw(win, images, player_car, computer_car, game_info):
     for img, pos in images:
         win.blit(img, pos)
 
+    win.blit(CHECKPOINT,(10,200))
+    win.blit(CHECKPOINT,(248,725))
+    win.blit(CHECKPOINT,(685,585))
+    win.blit(CHECKPOINT,(615,15))
+
+
     level_text = MAIN_FONT.render(f"Level {game_info.level}",1,(255,255,255))
     win.blit(level_text, (10, HEIGHT- level_text.get_height() - 70))
 
@@ -234,7 +243,7 @@ def car_collisions(player_car, computer_car, game_info):
         pygame.time.wait(5000)
         game_info.reset()
         player_car.reset()
-        computer_car.reset()
+        computer_car.next_level(1)
 
     player_finish_poi_collide = player_car.collide(FINISH_MASK, *FINISH_POSITION)
     if player_finish_poi_collide != None:
@@ -253,7 +262,7 @@ images = [(GRASS,(0,0)), (TRACK,(0,0)),
 
 # Velocities, straight line and rotaional, for both the player car and the computer car 
 player_car = PlayerCar(4,4) 
-computer_car = ComputerCar(2,2, PATH)
+computer_car = ComputerCar(1,1, PATH)
 game_info = GameInfo()
 
 
@@ -279,7 +288,8 @@ while run:
         #TO FIND THE COMPUTER CARS PATH FOR THE MULTIPLE TRACKS
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
-            computer_car.path.append(pos)
+            print(pos)
+            #computer_car.path.append(pos)
         #'''
 
      # Event loop to check for quitting the game
@@ -301,8 +311,9 @@ while run:
         pygame.time.wait(5000)
         game_info.reset()
         player_car.reset()
-        computer_car.reset()
+        computer_car.next_level(1)
 
+#print(pos)
 pygame.quit()
 
 
