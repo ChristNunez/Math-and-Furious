@@ -1,6 +1,7 @@
 import pygame
 import math
 import time
+import random
 from utils import scale_image, blit_rotate_center, blit_text_center
 pygame.font.init()
 
@@ -14,6 +15,8 @@ TRACK_BORDER_MASK = pygame.mask.from_surface(TRACK_BORDER)
 FINISH = pygame.image.load('imgs/finish.png')
 FINISH_MASK = pygame.mask.from_surface(FINISH)
 FINISH_POSITION = (130, 250)
+# Track which flags have been answered correctly
+answered_flags = set()
 RED = (255, 0, 0)
 
 # Flag 
@@ -34,6 +37,18 @@ FPS = 60
 PATH = [(168, 101), (104, 74), (44, 141), (64, 484), (346, 732), (412, 664), (414, 520), (494, 476), 
         (585, 514), (613, 722), (739, 716), (732, 384), (586, 354), (406, 339), (428, 257), (728, 240), 
         (737, 110), (600, 71), (291, 80), (262, 368), (180, 380), (150, 260)]
+
+# Math portion of the game 
+# Flag positions
+FLAG_POSITIONS = [(10, 200), (248, 725), (685, 585), (615, 15)]
+FLAG_TRIGGER_DISTANCE = 80
+
+# Math question state
+current_question = None
+correct_answer = None
+user_input = ""
+feedback = ""
+active_flag = None
 
 # Level system for the game
 class GameInfo:
@@ -244,6 +259,8 @@ def car_collisions(player_car, computer_car, game_info):
         game_info.reset()
         player_car.reset()
         computer_car.next_level(1)
+        answered_flags.clear()
+
 
     player_finish_poi_collide = player_car.collide(FINISH_MASK, *FINISH_POSITION)
     if player_finish_poi_collide != None:
@@ -253,6 +270,19 @@ def car_collisions(player_car, computer_car, game_info):
             game_info.next_level()
             player_car.reset()
             computer_car.next_level(game_info.level)
+            answered_flags.clear()
+
+
+def distance(x1, y1, x2, y2):
+    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+def generate_question():
+    a = random.randint(1, 10)
+    b = random.randint(1, 10)
+    op = random.choice(['+', '-'])
+    question = f"{a} {op} {b} = ?"
+    answer = a + b if op == '+' else a - b
+    return question, answer
 
 
 run = True
@@ -284,26 +314,91 @@ while run:
             if event.type == pygame.KEYDOWN:
                 game_info.start_level()
 
-        #'''
+        '''
         #TO FIND THE COMPUTER CARS PATH FOR THE MULTIPLE TRACKS
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
             print(pos)
             #computer_car.path.append(pos)
-        #'''
+        '''
 
-     # Event loop to check for quitting the game
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
             break
 
-    player_moves(player_car)
+        # --- Handle typing for math answers ---
+        if current_question and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                try:
+                    if int(user_input) == correct_answer:
+                        feedback = "✅ Correct!"
+                    else:
+                        feedback = "❌ Try again!"
+                except ValueError:
+                    feedback = "Enter a number!"
+                user_input = ""
+            elif event.key == pygame.K_BACKSPACE:
+                user_input = user_input[:-1]
+            elif event.unicode.isdigit() or (event.unicode == '-' and not user_input):
+                user_input += event.unicode
+
+
+    # Only allow movement if there’s no active question or it’s been answered correctly
+    if current_question is None or "Correct" in feedback:
+        player_moves(player_car)
+
     computer_car.move()
 
     car_collisions(player_car, computer_car, game_info)
 
-    pygame.draw.line(WIN, RED, (200, 300), (600, 300), 5)
+    # --- Check if player is close to any flag ---
+    near_flag = None
+    for pos in FLAG_POSITIONS:
+        if distance(player_car.x, player_car.y, pos[0], pos[1]) < FLAG_TRIGGER_DISTANCE:
+            near_flag = pos
+            break
+
+    # --- Show question if near a flag and not answered yet ---
+    if near_flag and near_flag not in answered_flags:
+        # Freeze car while answering
+        player_car.vel = 0
+
+        if current_question is None or active_flag != near_flag:
+            current_question, correct_answer = generate_question()
+            feedback = ""
+            user_input = ""
+            active_flag = near_flag
+
+        # Draw the math question (higher on screen)
+        q_text = MAIN_FONT.render(current_question, True, (255, 255, 255))
+        WIN.blit(q_text, (WITDH // 2 - q_text.get_width() // 2, 50))
+
+        ans_text = MAIN_FONT.render(user_input, True, (255, 255, 0))
+        WIN.blit(ans_text, (WITDH // 2 - ans_text.get_width() // 2, 100))
+
+        fb_text = MAIN_FONT.render(feedback, True, (0, 255, 0) if "Correct" in feedback else (255, 0, 0))
+        WIN.blit(fb_text, (WITDH // 2 - fb_text.get_width() // 2, 150))
+
+        # If answered correctly, unlock movement and mark flag as done
+        if "Correct" in feedback:
+            answered_flags.add(near_flag)
+            current_question = None
+            feedback = ""
+            user_input = ""
+            active_flag = None
+
+    else:
+        current_question = None
+        feedback = ""
+        user_input = ""
+        active_flag = None
+
+
+
+    #pygame.draw.line(WIN, RED, (200, 300), (600, 300), 5)
+    pygame.display.update()
+
 
     if game_info.end_game():
         blit_text_center(WIN, MAIN_FONT, "You Won the Game!")
@@ -312,76 +407,7 @@ while run:
         game_info.reset()
         player_car.reset()
         computer_car.next_level(1)
+        answered_flags.clear()
 
 #print(pos)
 pygame.quit()
-
-
-# Math logic for generating questions and checking answers
-"""
-import random
-
-# Addition Function
-def add_value(addx, addy):
-    add_total = addx + addy
-    return add_total
-
-# Subtraction Function
-def sub_value(subx, suby):
-    sub_total = subx - suby
-    return sub_total
-
-def multiply_value(mulx, muly):
-    mul_total = mulx * muly
-    return mul_total
-
-def divide_value(divx, divy):
-    div_total = divx / divy
-    return div_total    
-
-# Main Game Loop
-run_game = input("Do you want to play a math game? (yes/no) ").lower()
-while(run_game == "yes"):
-    # Addition and Subtraction Random Numbers
-    addx = random.randint(1, 10)
-    addy = random.randint(1, 10)
-    subx = random.randint(1, 10)
-    suby = random.randint(1, 10)
-
-    # Multiplication and Division Random Numbers
-    mulx = random.randint(1, 10)
-    muly = random.randint(1, 10)
-    divx = random.randint(1, 100)
-    divy = random.randint(1, 10)
-
-    add_value(addx, addy)
-    sub_value(subx, suby)
-    multiply_value(mulx, muly)
-    divide_value(divx, divy)
-
-    player_choice_add = int(input(f"What is the value of {addx} + {addy}? "))
-    player_choice_sub = int(input(f"What is the value of {subx} - {suby}? "))
-    player_choice_mul = int(input(f"What is the value of {mulx} * {muly}? "))
-    player_choice_div = float(input(f"What is the value of {divx} / {divy}? "))
-
-    if (player_choice_add != add_value(addx, addy)):
-        print(f"Incorrect, The answer to {addx} + {addy} is {add_value(addx, addy)}")
-    else:
-        print(f"Correct! The answer to {addx} + {addy} is {add_value(addx, addy)}")
-
-    if (player_choice_sub != sub_value(subx, suby)):
-        print(f"Incorrect, The answer to {subx} + {suby} is {sub_value(subx, suby)}")
-    else:
-        print(f"Correct! The answer to {subx} - {suby} is {sub_value(subx, suby)}")
-    if (player_choice_mul != multiply_value(mulx, muly)):
-        print(f"Incorrect, The answer to {mulx} * {muly} is {multiply_value(mulx, muly)}")
-    else:
-        print(f"Correct! The answer to {mulx} * {muly} is {multiply_value(mulx, muly)}")
-    if (player_choice_div != divide_value(divx, divy)):
-        print(f"Incorrect, The answer to {divx} / {divy} is {divide_value(divx, divy)}")
-    else:
-        print(f"Correct! The answer to {divx} / {divy} is {divide_value(divx, divy)}")
-
-    run_game = input("Do you want to play a math game? (yes/no) ").lower()
-
-    """
